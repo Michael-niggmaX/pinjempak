@@ -2,9 +2,32 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan; // Tambahan untuk migrasi
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE RAHASIA (UNTUK MIGRASI DI WASMER)
+|--------------------------------------------------------------------------
+| HAPUS ROUTE INI SETELAH MIGRASI BERHASIL!
+*/
+Route::get('/migrate-rahasia', function () {
+    try {
+        Artisan::call('migrate:fresh --seed');
+        return 'Mantap! Migrasi dan Seeder BERHASIL dijalankan di server Wasmer.';
+    } catch (\Exception $e) {
+        return 'Gagal: ' . $e->getMessage();
+    }
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE UTAMA APLIKASI
+|--------------------------------------------------------------------------
+*/
 
 // Route publik (bisa diakses tanpa login)
 Route::get('/', [InventoryController::class, 'index'])->name('home');
@@ -32,7 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [AuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profil/password', [AuthController::class, 'updatePassword'])->name('profile.password');
 
-    // Route khusus petugas
+    // Route khusus Admin
     Route::get('/tambah-barang', [InventoryController::class, 'create'])->name('create');
     Route::post('/tambah-barang', [InventoryController::class, 'store'])->name('store');
     Route::delete('/hapus-barang/{id}', [InventoryController::class, 'destroy'])->name('destroy');
@@ -47,7 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
      
-    // Route Laporan Kerusakan (Petugas)
+    // Route Laporan Kerusakan (Admin)
     Route::get('/laporan', [LoanController::class, 'laporan'])->name('laporan');
     Route::get('/laporan/{id}', [LoanController::class, 'laporanDetail'])->name('laporan.detail');
     Route::post('/laporan/{id}/konfirmasi', [LoanController::class, 'laporanKonfirmasi'])->name('laporan.konfirmasi');
