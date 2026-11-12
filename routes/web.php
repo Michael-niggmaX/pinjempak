@@ -24,6 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/pinjam/{id}', [LoanController::class, 'create'])->name('pinjam.create');
     Route::post('/pinjam/{id}', [LoanController::class, 'store'])->name('pinjam.store');
     Route::get('/riwayat', [LoanController::class, 'riwayat'])->name('riwayat');
+    Route::get('/riwayat/export', [LoanController::class, 'exportExcel'])->name('riwayat.export');
+    Route::post('/pending/{id}/konfirmasi-kembali', [LoanController::class, 'konfirmasiKembali'])->name('pending.konfirmasi-kembali');
+    Route::post('/pending/{id}/tolak-kembali', [LoanController::class, 'tolakKembali'])->name('pending.tolak-kembali');
+
+    // Route Pengaturan Akun
+    Route::get('/profil', [AuthController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profil/password', [AuthController::class, 'updatePassword'])->name('profile.password');
 
     // Route khusus petugas
     Route::get('/tambah-barang', [InventoryController::class, 'create'])->name('create');
@@ -48,7 +55,8 @@ Route::middleware('auth')->group(function () {
     // Halaman Kembalikan Barang (Siswa)
     Route::get('/kembalikan', [LoanController::class, 'indexKembalikan'])->name('kembalikan');
     Route::post('/kembalikan/{id}', [LoanController::class, 'prosesKembalikan'])->name('proses-kembalikan');
-        Route::get('/kembalikan/form/{id}', [LoanController::class, 'formKembalikan'])->name('form-kembalikan');
+    Route::get('/kembalikan/form/{id}', [LoanController::class, 'formKembalikan'])->name('form-kembalikan');
+    Route::get('/pending/kembali/{id}', [LoanController::class, 'showKembali'])->name('pending.show-kembali');
 
     // Halaman Lapor Rusak (Dari form Kembalikan)
     Route::get('/lapor-rusak/{id}', [LoanController::class, 'formRusak'])->name('lapor-rusak');

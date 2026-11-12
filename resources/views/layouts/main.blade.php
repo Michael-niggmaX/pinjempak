@@ -23,8 +23,12 @@
     <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-custom-orange text-white flex flex-col justify-between py-6 px-4 h-full shadow-xl z-40 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div>
             <div class="flex justify-between items-center mb-8 px-2">
-                <h1 class="text-2xl font-semibold tracking-wide">PinjemPak</h1>
-                <button class="md:hidden text-white" onclick="toggleSidebar()">
+                <a href="{{ route('home') }}" class="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity">
+                    <img src="{{ asset('images/pinjempak2.svg') }}" alt="Logo" class="w-12 h-12 md:w-35 md:h-30 object-contain">
+                    <h1 class="text-2xl md:text-3xl font-semibold tracking-wide">PinjemPak</h1>
+                </a>
+                
+                <button class="md:hidden text-white focus:outline-none" onclick="toggleSidebar()">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -90,7 +94,8 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 md:gap-3 hover:opacity-80 transition-opacity cursor-pointer">
+                <div class="text-right">
                     @auth
                         <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-gray-500 capitalize">{{ Auth::user()->role }}</p>
@@ -103,28 +108,13 @@
                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                     </svg>
                 </div>
+                </a>
             </div>
         </header>
 
         <div class="px-4 md:px-8 py-6 flex-1 pb-28">
             @yield('content')
         </div>
-
-        @if(request()->routeIs('home'))
-        <div class="fixed bottom-4 md:bottom-8 right-4 md:right-8 w-[calc(100%-2rem)] md:w-full md:max-w-md z-30">
-            <form action="{{ route('home') }}" method="GET" class="flex gap-2 items-center bg-white shadow-xl rounded-full border border-gray-200 p-1.5">
-                <div class="relative flex-1 flex items-center px-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Barang..." class="w-full outline-none text-sm bg-transparent">
-                </div>
-                <button type="submit" class="bg-custom-orange text-white px-5 py-2 rounded-full font-medium hover:bg-orange-500 transition-colors shadow-sm text-sm">
-                    Cari
-                </button>
-            </form>
-        </div>
-        @endif
 
         @auth
             @if(request()->routeIs('home') && Auth::user()->role === 'petugas')

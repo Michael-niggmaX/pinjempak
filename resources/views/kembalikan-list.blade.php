@@ -25,11 +25,11 @@
                         <p class="text-sm text-red-500 italic">Catatan Admin: {{ $loan->catatan_admin }}</p>
                     @endif
                 </div>
-                <div class="w-1/2 text-right flex gap-2 justify-end">
-                    <a href="{{ route('lapor-rusak', $loan->id) }}" class="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 text-sm">
+                <div class="w-full md:w-1/2 text-left md:text-right flex flex-col md:flex-row gap-2 justify-end mt-4 md:mt-0">
+                    <a href="{{ route('lapor-rusak', $loan->id) }}" class="w-full md:w-auto bg-red-500 text-white px-6 py-2.5 rounded-xl hover:bg-red-600 text-sm font-medium text-center">
                         Lapor Rusak
                     </a>
-                    <a href="{{ route('form-kembalikan', $loan->id) }}" class="bg-custom-orange text-black px-6 py-2 rounded-full hover:opacity-90 text-sm flex items-center justify-center">
+                    <a href="{{ route('form-kembalikan', $loan->id) }}" class="w-full md:w-auto bg-custom-orange text-white px-6 py-2.5 rounded-xl hover:bg-orange-500 text-sm font-medium text-center block">
                         Kembalikan (Baik)
                     </a>
                 </div>

@@ -38,11 +38,11 @@
                     @enderror
                 </div>
 
-                <div class="flex justify-center gap-6">
-                    <a href="{{ route('kembalikan') }}" class="bg-white text-black text-xl px-10 py-3 rounded-full shadow hover:bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-6 mt-8">
+                    <a href="{{ route('kembalikan') }}" class="w-full md:w-auto bg-gray-100 text-gray-700 text-lg px-8 py-3 rounded-xl shadow-sm hover:bg-gray-200 text-center transition-colors">
                         Batal
                     </a>
-                    <button type="submit" class="bg-custom-orange text-black text-xl px-10 py-3 rounded-full shadow hover:opacity-90">
+                    <button type="submit" class="w-full md:w-auto bg-custom-orange text-white text-lg px-8 py-3 rounded-xl shadow-sm hover:bg-orange-500 transition-colors">
                         Kembalikan
                     </button>
                 </div>

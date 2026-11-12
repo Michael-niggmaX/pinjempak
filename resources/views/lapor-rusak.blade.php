@@ -22,7 +22,9 @@
 
                 <div class="mb-4">
                     <label class="block text-xl mb-2">Detail Kerusakan:</label>
-                    <textarea name="detail_kerusakan" rows="3" required class="w-full rounded-2xl border-none p-4 text-lg focus:ring-2 focus:ring-red-500 outline-none" placeholder="Jelaskan bagian mana yang rusak..."></textarea>
+                    <textarea name="detail_kerusakan" rows="3" required 
+    class="w-full rounded-xl border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all shadow-sm bg-white" 
+    placeholder="Jelaskan bagian mana yang rusak..."></textarea>
                 </div>
 
                 <div class="mb-8">

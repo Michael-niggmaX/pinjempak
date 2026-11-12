@@ -1,31 +1,49 @@
 @extends('layouts.main')
 
 @section('content')
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <h1 class="text-2xl font-semibold text-gray-800">Katalog Barang</h1>
-
-        <form action="{{ route('home') }}" method="GET" class="flex flex-wrap items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-            @if(request('search'))
-                <input type="hidden" name="search" value="{{ request('search') }}">
-            @endif
-
-            <select name="kategori" onchange="this.form.submit()" class="bg-gray-50 text-sm font-medium border-none rounded-lg px-4 py-2 outline-none cursor-pointer focus:ring-2 focus:ring-custom-orange">
-                <option value="">Semua Kategori</option>
-                @foreach($kategoris as $kat)
-                    <option value="{{ $kat }}" {{ request('kategori') == $kat ? 'selected' : '' }}>
-                        {{ $kat }}
-                    </option>
-                @endforeach
-            </select>
-
-            <select name="status" onchange="this.form.submit()" class="bg-gray-50 text-sm font-medium border-none rounded-lg px-4 py-2 outline-none cursor-pointer focus:ring-2 focus:ring-custom-orange">
-                <option value="">Semua Status</option>
-                <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-            </select>
+    <div class="sticky top-[60px] md:top-[72px] z-30 bg-gray-50/95 backdrop-blur-sm pt-2 pb-4 -mx-4 px-4 md:-mx-8 md:px-8 border-b border-gray-200/50 mb-6">
+        
+        <form action="{{ route('home') }}" method="GET" class="flex flex-col md:flex-row gap-3 items-center">
             
-            @if(request()->anyFilled(['search', 'status', 'kategori']))
-                <a href="{{ route('home') }}" class="text-red-500 hover:text-red-600 text-sm font-medium px-2">Reset</a>
-            @endif
+            <div class="relative w-full md:w-1/3">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari barang..." 
+                    class="w-full bg-white border border-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-custom-orange focus:border-custom-orange block pl-10 p-2.5 shadow-sm transition-all">
+            </div>
+
+            <div class="w-full md:w-1/4">
+                <select name="kategori" onchange="this.form.submit()" class="w-full bg-white border border-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-custom-orange focus:border-custom-orange block p-2.5 shadow-sm cursor-pointer transition-all">
+                    <option value="">Semua Kategori</option>
+                    @foreach($kategoris as $kat)
+                        <option value="{{ $kat }}" {{ request('kategori') == $kat ? 'selected' : '' }}>
+                            {{ $kat }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="w-full md:w-1/4">
+                <select name="status" onchange="this.form.submit()" class="w-full bg-white border border-gray-300 text-sm rounded-xl focus:ring-2 focus:ring-custom-orange focus:border-custom-orange block p-2.5 shadow-sm cursor-pointer transition-all">
+                    <option value="">Semua Status</option>
+                    <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                </select>
+            </div>
+
+            <div class="w-full md:w-auto flex gap-2 justify-end">
+                <button type="submit" class="w-full md:w-auto bg-custom-orange text-white px-6 py-2.5 rounded-xl font-medium hover:bg-orange-500 transition-colors shadow-sm text-sm">
+                    Cari
+                </button>
+                
+                @if(request()->anyFilled(['search', 'status', 'kategori']))
+                    <a href="{{ route('home') }}" class="bg-gray-100 text-gray-600 px-4 py-2.5 rounded-xl hover:bg-gray-200 transition-colors text-sm flex items-center justify-center" title="Reset Filter">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </a>
+                @endif
+            </div>
         </form>
     </div>
 
@@ -76,7 +94,7 @@
                 
                 <p class="text-sm text-gray-500 mb-4">{{ $item->kategori ?? 'Umum' }}</p>
                 
-                                <div class="mt-auto flex items-center gap-3 border-t border-gray-100 pt-4">
+                <div class="mt-auto flex items-center gap-3 border-t border-gray-100 pt-4">
                     <div class="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-md border border-green-100">
                         <span class="w-2 h-2 rounded-full bg-green-500"></span>
                         <span class="text-xs font-medium text-green-700">Tersedia: {{ $item->stok }}</span>

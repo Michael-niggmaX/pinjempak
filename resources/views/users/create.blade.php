@@ -31,6 +31,7 @@
                     <select name="role" required class="w-full rounded-xl border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-custom-orange focus:border-transparent outline-none transition-all shadow-sm">
                         <option value="siswa" {{ old('role') == 'siswa' ? 'selected' : '' }}>Siswa</option>
                         <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru</option>
+                        <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
                     </select>
                 </div>
 

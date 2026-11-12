@@ -60,21 +60,17 @@ class LoanController extends Controller
         return redirect()->route('home')->with('success', 'Peminjaman berhasil diajukan! Menunggu konfirmasi petugas.');
     }
 
-        public function pending()
+    public function pending()
     {
         $user = Auth::user();
 
         if ($user->role === 'petugas') {
-            $loans = Loan::whereIn('status', ['pending', 'disetujui'])
-                         ->with(['inventory', 'user'])
-                         ->latest()
-                         ->get();
+            $loans = Loan::whereIn('status', ['pending', 'disetujui', 'pending_kembali'])
+                         ->with(['inventory', 'user'])->latest()->get();
         } else {
             $loans = Loan::where('user_id', $user->id)
-                         ->whereIn('status', ['pending', 'disetujui'])
-                         ->with(['inventory', 'user'])
-                         ->latest()
-                         ->get();
+                         ->whereIn('status', ['pending', 'disetujui', 'pending_kembali'])
+                         ->with(['inventory', 'user'])->latest()->get();
         }
 
         return view('pending', compact('loans'));
@@ -162,10 +158,6 @@ class LoanController extends Controller
 
         $request->validate([
             'foto_bukti' => 'required|image|mimes:jpeg,png,jpg|max:2048'
-        ], [
-            'foto_bukti.required' => 'Bukti foto wajib diupload!',
-            'foto_bukti.image' => 'File harus berupa gambar.',
-            'foto_bukti.max' => 'Ukuran gambar maksimal 2MB.'
         ]);
 
         $nama_file = null;
@@ -175,20 +167,11 @@ class LoanController extends Controller
             $file->move(public_path('images'), $nama_file);
         }
 
-        $item = $loan->inventory;
-        $item->stok += $loan->jumlah;
-        if ($item->stok > 0 && $item->status === 'Dipinjam') {
-            $item->status = 'Tersedia';
-        }
-        $item->save();
-
-        $loan->status = 'dikembalikan';
-        $loan->tanggal_kembali = now();
-        $loan->kondisi_kembali = 'Baik';
+        $loan->status = 'pending_kembali';
         $loan->foto_bukti = $nama_file; 
         $loan->save();
 
-        return redirect()->route('kembalikan')->with('success', 'Barang berhasil dikembalikan dengan kondisi baik.');
+        return redirect()->route('kembalikan')->with('success', 'Bukti pengembalian dikirim. Menunggu konfirmasi Petugas.');
     }
 
     public function formRusak($id)
@@ -277,24 +260,138 @@ class LoanController extends Controller
         return redirect()->route('laporan')->with('success', 'Laporan dikonfirmasi. Stok telah dipindahkan ke Barang Rusak.');
     }
 
-        public function riwayat()
+    public function riwayat(Request $request)
     {
         $user = Auth::user();
+        
+        $startDate = $request->input('start_date', \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->input('end_date', \Carbon\Carbon::now()->format('Y-m-d'));
+        $tahun = $request->input('tahun');
 
-        if ($user->role === 'petugas') {
-            $loans = Loan::whereIn('status', ['ditolak', 'dikembalikan'])
-                         ->with(['inventory', 'user'])
-                         ->latest()
-                         ->get();
-        } else {
-            $loans = Loan::where('user_id', $user->id)
-                         ->whereIn('status', ['ditolak', 'dikembalikan'])
-                         ->with(['inventory', 'user'])
-                         ->latest()
-                         ->get();
+        $query = Loan::whereIn('status', ['ditolak', 'dikembalikan']);
+
+        if ($user->role !== 'petugas') {
+            $query->where('user_id', $user->id);
         }
 
-        return view('riwayat', compact('loans'));
+        if ($tahun) {
+            $query->whereYear('updated_at', $tahun);
+        } else {
+            $query->whereDate('updated_at', '>=', $startDate)
+                  ->whereDate('updated_at', '<=', $endDate);
+        }
+
+        $loans = $query->with(['inventory', 'user'])->latest()->get();
+
+        $tahunTersedia = Loan::selectRaw('YEAR(updated_at) as tahun')
+                             ->distinct()
+                             ->orderBy('tahun', 'desc')
+                             ->pluck('tahun');
+
+        return view('riwayat', compact('loans', 'startDate', 'endDate', 'tahun', 'tahunTersedia'));
     }
     
+    public function exportExcel(Request $request)
+    {
+        $startDate = $request->input('start_date', \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->input('end_date', \Carbon\Carbon::now()->format('Y-m-d'));
+        $tahun = $request->input('tahun');
+
+        $query = Loan::whereIn('status', ['ditolak', 'dikembalikan'])->with(['inventory', 'user']);
+
+        if ($tahun) {
+            $query->whereYear('updated_at', $tahun);
+        } else {
+            $query->whereDate('updated_at', '>=', $startDate)->whereDate('updated_at', '<=', $endDate);
+        }
+
+        $loans = $query->latest()->get();
+
+        $filename = 'riwayat_peminjaman_' . date('Y-m-d_H-i') . '.csv';
+        
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['No', 'Nama Barang', 'Jumlah', 'Nama Peminjam', 'Kelas', 'Jurusan', 'Status', 'Tanggal Selesai'];
+
+        $callback = function() use($loans, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            $no = 1;
+            foreach ($loans as $loan) {
+                fputcsv($file, [
+                    $no++,
+                    $loan->inventory->nama_barang,
+                    $loan->jumlah,
+                    $loan->nama_peminjam,
+                    $loan->kelas,
+                    $loan->jurusan,
+                    $loan->status,
+                    $loan->updated_at->format('d-m-Y')
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function konfirmasiKembali($id)
+    {
+        if (Auth::user()->role !== 'petugas') abort(403);
+
+        $loan = Loan::findOrFail($id);
+        if ($loan->status !== 'pending_kembali') return back()->withErrors(['msg' => 'Status tidak valid.']);
+
+        $item = $loan->inventory;
+        $item->stok += $loan->jumlah;
+        if ($item->stok > 0 && $item->status === 'Dipinjam') {
+            $item->status = 'Tersedia';
+        }
+        $item->save();
+
+        if ($loan->foto_bukti && file_exists(public_path('images/' . $loan->foto_bukti))) {
+            unlink(public_path('images/' . $loan->foto_bukti));
+        }
+
+        // 3. Update Status
+        $loan->status = 'dikembalikan';
+        $loan->tanggal_kembali = now();
+        $loan->kondisi_kembali = 'Baik';
+        $loan->foto_bukti = null;
+        $loan->save();
+
+        return redirect()->route('pending')->with('success', 'Pengembalian dikonfirmasi. Stok bertambah dan foto dihapus.');
+    }
+
+    public function tolakKembali($id)
+    {
+        if (Auth::user()->role !== 'petugas') abort(403);
+
+        $loan = Loan::findOrFail($id);
+        if ($loan->status !== 'pending_kembali') return back()->withErrors(['msg' => 'Status tidak valid.']);
+
+        if ($loan->foto_bukti && file_exists(public_path('images/' . $loan->foto_bukti))) {
+            unlink(public_path('images/' . $loan->foto_bukti));
+        }
+
+        $loan->status = 'disetujui';
+        $loan->foto_bukti = null;
+        $loan->save();
+
+        return redirect()->route('pending')->with('success', 'Pengembalian ditolak. Siswa harus mengunggah bukti baru.');
+    }
+
+    public function showKembali($id)
+    {
+        if (Auth::user()->role !== 'petugas') abort(403);
+        $loan = Loan::with('inventory')->findOrFail($id);
+        return view('pending-kembali', compact('loan'));
+    }
 }
