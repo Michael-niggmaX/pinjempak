@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Artisan; // Tambahan untuk migrasi
 */
 Route::get('/migrate-rahasia', function () {
     try {
-        Artisan::call('migrate:fresh --seed');
+        Artisan::call('migrate:fresh --seed --force');
         return 'Mantap! Migrasi dan Seeder BERHASIL dijalankan di server Wasmer.';
     } catch (\Exception $e) {
         return 'Gagal: ' . $e->getMessage();
